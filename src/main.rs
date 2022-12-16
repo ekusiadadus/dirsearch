@@ -1,41 +1,42 @@
 use std::error::Error;
 
 use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)] // Read from `Cargo.toml`
+struct Cli {
+    #[arg(long)]
+    number: usize,
+}
+
 use file_size::fit_4;
 use walkdir::WalkDir;
 
-/// Simple program to greet a person
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// Name of the person to greet
-    #[arg(short, long)]
-    name: String,
-
-    /// Number of times to greet
-    #[arg(short, long, default_value_t = 1)]
-    count: u8,
-}
-
 const DIR: &str = "./";
 const NUM: usize = 10;
+
+fn main() {
+    let cli = Cli::parse();
+    let num = cli.number;
+    let dir = DIR;
+
+    if num == 0 {
+        println!("Number of files to show must be greater than 0");
+        return;
+    }
+
+    get_dir_size(dir, num).unwrap();
+}
 
 struct Entry {
     path: String,
     size: u64,
 }
 
-fn main() {
-    match get_dir_size(DIR) {
-        Ok(_) => (),
-        Err(e) => println!("Error: {}", e),
-    }
-}
-
-fn get_dir_size(dir: &str) -> Result<(), Box<dyn Error>> {
+fn get_dir_size(dir: &str, num: usize) -> Result<(), Box<dyn Error>> {
     let mut size: u64 = 0;
     let mut count: u64 = 0;
-    let mut tops: Vec<Entry> = Vec::with_capacity(NUM + 1);
+    let mut tops: Vec<Entry> = Vec::with_capacity(num + 1);
     let mut min_tops: u64 = 0;
 
     for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
@@ -48,7 +49,7 @@ fn get_dir_size(dir: &str) -> Result<(), Box<dyn Error>> {
                     size: t,
                 });
                 tops.sort_by(|a, b| b.size.cmp(&a.size));
-                tops.truncate(NUM);
+                tops.truncate(num);
                 min_tops = tops.last().unwrap().size;
             }
             size += path.metadata().unwrap().len();
@@ -57,7 +58,7 @@ fn get_dir_size(dir: &str) -> Result<(), Box<dyn Error>> {
     }
 
     println!("{} files, {} bytes", count, fit_4(size));
-    println!("{} largest files:", NUM);
+    println!("{} largest files:", num);
     println!("{} | {}", "Size", "Path");
     for t in tops {
         println!("{} | {}", fit_4(t.size), t.path);
