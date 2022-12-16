@@ -1,4 +1,5 @@
 use clap::Parser;
+use walkdir::WalkDir;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -14,9 +15,8 @@ struct Args {
 }
 
 fn main() {
-    let args = Args::parse();
-
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name)
+    for entry in WalkDir::new(".") {
+        let entry = entry.unwrap();
+        println!("{}", entry.path().display());
     }
 }
