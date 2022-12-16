@@ -1,6 +1,5 @@
-use std::error::Error;
-
 use clap::Parser;
+use std::error::Error;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)] // Read from `Cargo.toml`
@@ -13,7 +12,6 @@ use file_size::fit_4;
 use walkdir::WalkDir;
 
 const DIR: &str = "./";
-const NUM: usize = 10;
 
 fn main() {
     let cli = Cli::parse();
